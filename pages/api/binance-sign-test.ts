@@ -12,8 +12,9 @@ export default async function binanceSignTest(
     dataIsSame: outcome.data === BinanceJavaPKCS8.rawContent,
     signedDataIsSame: outcome.signedData === BinanceJavaPKCS8.signedContent,
     data: outcome.data,
-    binanceDataExample: BinanceJavaPKCS8.rawContent,
+    dataExample: BinanceJavaPKCS8.rawContent,
+    encodeData: outcome.encodedData, 
     signedData: outcome.signedData,
-    binanceSignedDataExample: BinanceJavaPKCS8.signedContent,
+    signedDataExample: BinanceJavaPKCS8.signedContent,
   })
 }

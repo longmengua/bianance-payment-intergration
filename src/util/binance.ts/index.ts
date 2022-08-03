@@ -18,10 +18,13 @@ export class Binance {
   static privateKey = process.env.BIANACE_PRIVATE_KEY || '';
 
   static sign = (data: string) => {
-    const signedData = crypto.createHmac("SHA256", this.privateKey).update(data).digest("hex");
+    const utf8Encoder = new TextEncoder();
+    const encodedData = utf8Encoder.encode(data)
+    const signedData = crypto.createHmac("SHA256", this.privateKey).update(encodedData).digest("base64");
     return {
       privateKey: this.privateKey,
       data,
+      encodedData,
       signedData,
     };
   }
