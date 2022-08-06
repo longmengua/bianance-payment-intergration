@@ -8,20 +8,22 @@
     - 
 */ 
 import crypto from 'node:crypto';
-import fs from 'node:fs';
-import path from 'node:path';
+import { BIANACE_ENV } from './env';
 export enum BINANCE_ORDER_ENUM {
   SUCCESS = 'SUCCESS',
   FAILED = 'FAILED',
 }
+
 export class Binance {
-  static domain = process.env.BIANACE_DOMAIN || '';
-  static privateKey = fs.readFileSync(path.join(__dirname,'../../../../', 'rsa_pkcs8.example.pri'), "utf8");
+  static env: {
+    privateKey: string;
+    domain: string;
+  } = BIANACE_ENV;
 
   static sign = (data: string) => {
-    const signedData = crypto.sign('RSA-SHA256', Buffer.from(data), this.privateKey).toString('base64');
+    const signedData = crypto.sign('RSA-SHA256', Buffer.from(data), this.env.privateKey).toString('base64');
     return {
-      privateKey: this.privateKey,
+      privateKey: this.env.privateKey,
       data,
       signedData,
     };
@@ -54,7 +56,7 @@ export class Binance {
 
   static fetch = async (url: string, method: string, data?: any) => {
     const res = await fetch(
-      `${this.domain}${url}`, 
+      `${this.env.domain}${url}`, 
       {
         method: method,
         headers: this.headers(),
