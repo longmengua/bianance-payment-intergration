@@ -8,7 +8,7 @@
     - 
 */ 
 import crypto from 'node:crypto';
-import { BIANACE_ENV } from './env';
+import { BIANACE_ENV } from './const';
 export enum BINANCE_ORDER_ENUM {
   SUCCESS = 'SUCCESS',
   FAILED = 'FAILED',
@@ -17,20 +17,16 @@ export enum BINANCE_ORDER_ENUM {
 export class Binance {
   static env: {
     privateKey: string;
+    publicKey: string;
     domain: string;
   } = BIANACE_ENV;
 
   static sign = (data: string) => {
-    const signedData = crypto.sign('RSA-SHA256', Buffer.from(data), this.env.privateKey).toString('base64');
-    return {
-      privateKey: this.env.privateKey,
-      data,
-      signedData,
-    };
+    return crypto.sign('RSA-SHA256', Buffer.from(data), this.env.privateKey).toString('base64');
   }
 
-  static verify = (data: string, privateKey: string) => {
-
+  static verify = (data: string, signature: string) => {
+    return crypto.verify('RSA-SHA256', Buffer.from(data), this.env.publicKey, Buffer.from(signature, 'base64'));
   }
 
   static headers = () => {
