@@ -8,23 +8,21 @@
     - 
 */ 
 import crypto from 'node:crypto';
-import { BinanceJavaPKCS8 } from './example';
+import fs from 'node:fs';
+import path from 'node:path';
 export enum BINANCE_ORDER_ENUM {
   SUCCESS = 'SUCCESS',
   FAILED = 'FAILED',
 }
 export class Binance {
   static domain = process.env.BIANACE_DOMAIN || '';
-  static privateKey = process.env.BIANACE_PRIVATE_KEY || '';
+  static privateKey = fs.readFileSync(path.join(__dirname,'../../../../', 'rsa_pkcs8.example.pri'), "utf8");
 
   static sign = (data: string) => {
-    const utf8Encoder = new TextEncoder();
-    const encodedData = utf8Encoder.encode(data)
-    const signedData = crypto.createHmac("SHA256", this.privateKey).update(encodedData).digest("base64");
+    const signedData = crypto.sign('RSA-SHA256', Buffer.from(data), this.privateKey).toString('base64');
     return {
       privateKey: this.privateKey,
       data,
-      encodedData,
       signedData,
     };
   }
