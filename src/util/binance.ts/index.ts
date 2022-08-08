@@ -33,7 +33,7 @@ export class Binance {
       name         | type   | example     | remark
       merchantCode | string | TrustWallet | created by Binance Connect
     */
-    headers.append('merchantCode', '');
+    headers.append('merchantCode', 'solchicks_test');
     /*
       name      | type | example       | remark
       timestamp | long | 1617893300241 | timestamp
