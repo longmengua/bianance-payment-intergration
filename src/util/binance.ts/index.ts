@@ -18,39 +18,40 @@ export class Binance {
     domain: string;
   } = BIANACE_ENV;
 
-  static sign = (data: string) => {
-    return crypto.sign('RSA-SHA256', Buffer.from(data), this.env.privateKey).toString('base64');
+  static sign = (dataStr: string) => {
+    return crypto.sign('RSA-SHA256', Buffer.from(dataStr), this.env.privateKey).toString('base64');
   };
 
-  static verify = (data: string, signature: string) => {
-    return crypto.verify('RSA-SHA256', Buffer.from(data), this.env.publicKey, Buffer.from(signature, 'base64'));
+  static verify = (dataStr: string, signature: string) => {
+    return crypto.verify('RSA-SHA256', Buffer.from(dataStr), this.env.publicKey, Buffer.from(signature, 'base64'));
   };
 
-  static headers = () => {
+  static headers = (dataStr: string) => {
     const headers: Headers = new Headers();
     headers.append('Content-Type', 'application/json');
     /*
       name         | type   | example     | remark
       merchantCode | string | TrustWallet | created by Binance Connect
     */
-    headers.append('merchantCode', 'application/json');
+    headers.append('merchantCode', '');
     /*
       name      | type | example       | remark
       timestamp | long | 1617893300241 | timestamp
     */
-    headers.append('timestamp', 'application/json');
+    headers.append('timestamp', Math.round(new Date().getTime() / 1000).toString());
     /*
       name            | type   | example       
       x-api-signature | string | c2492614ba35bd836a91c083f7103263919ce459 0b61e13013463ffed769ac80
     */
-    headers.append('timestamp', 'application/json');
+    headers.append('x-api-signature', this.sign(dataStr));
     return headers;
   };
 
   static fetch = async (url: string, method: string, data?: any) => {
+    const dataStr = typeof data === 'string' ? data : JSON.stringify(data);
     return await fetch(`${this.env.domain}${url}`, {
       method: method,
-      headers: this.headers(),
+      headers: this.headers(dataStr),
     })
       .then((r) => r.json())
       .catch((e) => ({
