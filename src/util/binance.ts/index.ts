@@ -48,11 +48,15 @@ export class Binance {
   };
 
   static fetch = async (url: string, method: string, data?: any) => {
-    const res: Response = await fetch(`${this.env.domain}${url}`, {
+    return await fetch(`${this.env.domain}${url}`, {
       method: method,
       headers: this.headers(),
-    });
-    return res.json();
+    })
+      .then((r) => r.json())
+      .catch((e) => ({
+        status: 401,
+        error: e?.message,
+      }));
   };
 
   static fetchGET = async (url: string) => this.fetch(url, 'GET');
@@ -119,7 +123,6 @@ export class Binance {
     when they need a webhook from Binance Connect to get the result of trade.
   */
   static nftOrderCallBack = async () => {
-    const res = undefined;
-    return res;
+    return undefined;
   };
 }
