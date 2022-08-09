@@ -16,48 +16,46 @@ export class Binance {
     privateKey: string;
     publicKey: string;
     domain: string;
+    merchantCode: string;
   } = BIANACE_ENV;
 
-  static sign = (dataStr: string) => {
+  static sign = (dataStr: string): string => {
+    if(dataStr === undefined) throw new Error('dataStr cannot be undefined')
     return crypto.sign('RSA-SHA256', Buffer.from(dataStr), this.env.privateKey).toString('base64');
   };
 
-  static verify = (dataStr: string, signature: string) => {
+  static verify = (dataStr: string, signature: string): boolean => {
     return crypto.verify('RSA-SHA256', Buffer.from(dataStr), this.env.publicKey, Buffer.from(signature, 'base64'));
   };
 
-  static headers = (dataStr: string) => {
+  static headers = (data: Record<string, any>) => {
+    const timestamp = Math.round(new Date().getTime() / 1000).toString();
+    const merchantCode = this.env.merchantCode;
+    const dataStr = `${!data || Object.keys(data).length <= 0 ? '' : `${JSON.stringify(data)}&`}merchantCode=${merchantCode}&timestamp=${timestamp}`;
+    const signature = this.sign(dataStr);
     const headers: Headers = new Headers();
+
     headers.append('Content-Type', 'application/json');
-    /*
-      name         | type   | example     | remark
-      merchantCode | string | TrustWallet | created by Binance Connect
-    */
-    headers.append('merchantCode', 'solchicks_test');
-    /*
-      name      | type | example       | remark
-      timestamp | long | 1617893300241 | timestamp
-    */
-    headers.append('timestamp', Math.round(new Date().getTime() / 1000).toString());
-    /*
-      name            | type   | example       
-      x-api-signature | string | c2492614ba35bd836a91c083f7103263919ce459 0b61e13013463ffed769ac80
-    */
-    headers.append('x-api-signature', this.sign(dataStr));
+    headers.append('merchantCode', merchantCode);
+    headers.append('timestamp', timestamp);
+    headers.append('x-api-signature', signature);
+
     return headers;
   };
 
   static fetch = async (url: string, method: string, data?: any) => {
-    const dataStr = typeof data === 'string' ? data : JSON.stringify(data);
+    const body = typeof data === 'string' ? data : JSON.stringify(data);
+    const headers = this.headers(data);
     return await fetch(`${this.env.domain}${url}`, {
       method: method,
-      headers: this.headers(dataStr),
-    })
-      .then((r) => r.json())
-      .catch((e) => ({
-        status: 401,
-        error: e?.message,
-      }));
+      headers: headers,
+      body: body,
+    }).then((r) => {
+      if(r.ok) return r.json();
+      return new Error('unknow error');
+    }).catch(e => {
+      return e?.message;
+    });
   };
 
   static fetchGET = async (url: string) => this.fetch(url, 'GET');
